@@ -1,0 +1,43 @@
+Проверка доступности веб-панели...
+
+==============================================
+🎉 УСТАНОВКА APK PACKAGE CHANGER ЗАВЕРШЕНА! 🎉
+==============================================
+
+📍 Расположение проекта: /root/apk-package-changer
+🌐 IP адрес сервера: 150.241.103.186
+🔗 Веб-панель: http://150.241.103.186:5000
+
+📊 СТАТУС СЕРВИСОВ:
+   Systemd сервис: ❌ НЕ РАБОТАЕТ
+   Веб-панель: ❌ НЕ ДОСТУПНА
+   Python процессов: 0
+
+⚠️  ПРОБЛЕМА С ЗАПУСКОМ! Проверьте логи:
+   sudo journalctl -u apk-changer -f
+   sudo systemctl status apk-changer
+
+🛠️  ПОЛЕЗНЫЕ КОМАНДЫ:
+   Статус: sudo systemctl status apk-changer
+   Логи: sudo journalctl -u apk-changer -f
+   Перезапуск: sudo systemctl restart apk-changer
+   Остановка: sudo systemctl stop apk-changer
+==============================================
+
+📋 ПОСЛЕДНИЕ ЛОГИ СЕРВИСА:
+Jun 24 22:55:15 whimsicalcake.aeza.network systemd[1]: Started APK Package Changer Web Service.
+Jun 24 22:55:15 whimsicalcake.aeza.network python3[50574]: Traceback (most recent call last):
+Jun 24 22:55:15 whimsicalcake.aeza.network python3[50574]:   File "/root/apk-package-changer/app.py", line 1, in <module>
+Jun 24 22:55:15 whimsicalcake.aeza.network python3[50574]:     from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for, flash
+Jun 24 22:55:15 whimsicalcake.aeza.network python3[50574]:   File "/usr/lib/python3/dist-packages/flask/__init__.py", line 7, in <module>
+Jun 24 22:55:15 whimsicalcake.aeza.network python3[50574]:     from .app import Flask as Flask
+Jun 24 22:55:15 whimsicalcake.aeza.network python3[50574]:   File "/usr/lib/python3/dist-packages/flask/app.py", line 28, in <module>
+Jun 24 22:55:15 whimsicalcake.aeza.network python3[50574]:     from . import cli
+Jun 24 22:55:15 whimsicalcake.aeza.network python3[50574]:   File "/usr/lib/python3/dist-packages/flask/cli.py", line 18, in <module>
+Jun 24 22:55:15 whimsicalcake.aeza.network python3[50574]:     from .helpers import get_debug_flag
+Jun 24 22:55:15 whimsicalcake.aeza.network python3[50574]:   File "/usr/lib/python3/dist-packages/flask/helpers.py", line 16, in <module>
+Jun 24 22:55:15 whimsicalcake.aeza.network python3[50574]:     from werkzeug.urls import url_quote
+Jun 24 22:55:15 whimsicalcake.aeza.network python3[50574]: ImportError: cannot import name 'url_quote' from 'werkzeug.urls' (/usr/local/lib/python3.10/dist-packages/werkzeug/urls.py)
+Jun 24 22:55:15 whimsicalcake.aeza.network systemd[1]: apk-changer.service: Main process exited, code=exited, status=1/FAILURE
+Jun 24 22:55:15 whimsicalcake.aeza.network systemd[1]: apk-changer.service: Failed with result 'exit-code'.
+root@whimsicalcake:~# 
