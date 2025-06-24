@@ -46,12 +46,13 @@ export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 echo "Обновление pip..."
 python3 -m pip install --upgrade pip
 
-# Установка дополнительных Python зависимостей
-echo "Установка дополнительных Python зависимостей..."
-# Используем системные Flask, blinker и другие, устанавливаем только недостающие
-sudo apt install -y python3-flask python3-dotenv 2>/dev/null || true
-python3 -m pip install --user python-dotenv==1.0.0 2>/dev/null || true
-echo "Python зависимости готовы (используем системные пакеты)"
+# Установка Python зависимостей
+echo "Установка Python зависимостей..."
+# Устанавливаем совместимые версии Flask и Werkzeug
+python3 -m pip install --user Flask==2.3.3
+python3 -m pip install --user Werkzeug==2.3.7
+python3 -m pip install --user python-dotenv==1.0.0
+echo "Python зависимости установлены"
 
 # Установка Android SDK Tools
 echo "Установка Android Build Tools..."
