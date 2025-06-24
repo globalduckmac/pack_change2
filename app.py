@@ -7,6 +7,8 @@ import json
 from datetime import datetime
 import threading
 import time
+import signal
+import sys
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'
@@ -191,6 +193,39 @@ def load_history():
 def save_history(data):
     with open('history.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+
+@app.route('/update_from_github', methods=['POST'])
+def update_from_github():
+    try:
+        # Остановка текущих процессов
+        global process_running
+        process_running = False
+        
+        # Обновление из GitHub
+        result = subprocess.run(['git', 'pull', 'origin', 'main'], 
+                              capture_output=True, text=True)
+        
+        if result.returncode == 0:
+            # Установка новых зависимостей если нужно
+            subprocess.run(['pip3', 'install', '-r', 'requirements.txt'], 
+                          capture_output=True)
+            subprocess.run(['npm', 'install'], capture_output=True)
+            
+            flash('Обновление успешно загружено! Сервер перезагружается...', 'success')
+            
+            # Перезапуск сервера через системный сервис
+            def restart_server():
+                time.sleep(2)
+                subprocess.run(['sudo', 'systemctl', 'restart', 'apk-changer'])
+            
+            thread = threading.Thread(target=restart_server)
+            thread.start()
+            
+            return jsonify({'status': 'success', 'message': 'Обновление завершено'})
+        else:
+            return jsonify({'status': 'error', 'message': f'Ошибка обновления: {result.stderr}'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

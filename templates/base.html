@@ -15,6 +15,9 @@
             <div class="navbar-nav">
                 <a class="nav-link" href="{{ url_for('index') }}">Главная</a>
                 <a class="nav-link" href="{{ url_for('history') }}">История</a>
+                <button class="btn btn-outline-light btn-sm ms-2" onclick="updateFromGitHub()">
+                    🔄 Обновить
+                </button>
             </div>
         </div>
     </nav>
@@ -95,6 +98,28 @@
                 alert('Ошибка: ' + data.message);
             }
         });
+    }
+
+    function updateFromGitHub() {
+        if (confirm('Обновить приложение с GitHub? Сервер будет перезагружен.')) {
+            fetch('/update_from_github', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Обновление запущено! Страница будет перезагружена через 5 секунд.');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 5000);
+                } else {
+                    alert('Ошибка обновления: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Ошибка: ' + error);
+            });
+        }
     }
     </script>
 </body>
