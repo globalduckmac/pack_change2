@@ -7,8 +7,6 @@ import json
 from datetime import datetime
 import threading
 import time
-import signal
-import sys
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'
@@ -53,14 +51,30 @@ def index():
     if os.path.exists('old_package'):
         apk_files = [f for f in os.listdir('old_package') if f.endswith('.apk')]
     
+    # Получаем список готовых APK файлов в new_package
+    new_apk_files = []
+    if os.path.exists('new_package'):
+        new_apk_files = [f for f in os.listdir('new_package') if f.endswith('.apk')]
+    
     # Проверяем наличие сгенерированных пакетов
     result_exists = os.path.exists('package_create/result.txt')
     used_exists = os.path.exists('package_create/used.txt')
     
+    # Читаем сгенерированные пакеты для отображения
+    generated_packages = []
+    if result_exists:
+        try:
+            with open('package_create/result.txt', 'r') as f:
+                generated_packages = [line.strip() for line in f.readlines() if line.strip()]
+        except:
+            pass
+    
     return render_template('index.html', 
                          apk_files=apk_files, 
+                         new_apk_files=new_apk_files,
                          result_exists=result_exists,
-                         used_exists=used_exists)
+                         used_exists=used_exists,
+                         generated_packages=generated_packages)
 
 @app.route('/generate_packages', methods=['POST'])
 def generate_packages():
@@ -68,10 +82,11 @@ def generate_packages():
         count = int(request.form.get('count', 10))
         
         # Запускаем скрипт генерации пакетов
-        result = subprocess.run(['python', 'package_create/create_packeges.py'], 
+        result = subprocess.run(['python3', 'package_create/create_packeges.py'], 
                               input=str(count), 
                               text=True, 
-                              capture_output=True)
+                              capture_output=True,
+                              cwd=os.getcwd())
         
         if result.returncode == 0:
             # Сохраняем в историю
@@ -97,8 +112,13 @@ def upload_apk():
     
     if file and file.filename.endswith('.apk'):
         filename = file.filename
-        file.save(os.path.join('old_package', filename))
-        flash(f'Файл {filename} успешно загружен!', 'success')
+        filepath = os.path.join('old_package', filename)
+        file.save(filepath)
+        # Проверяем, что файл действительно сохранился
+        if os.path.exists(filepath):
+            flash(f'Файл {filename} успешно загружен!', 'success')
+        else:
+            flash(f'Ошибка сохранения файла {filename}', 'error')
     else:
         flash('Загружайте только APK файлы', 'error')
     
@@ -106,15 +126,14 @@ def upload_apk():
 
 @app.route('/change_packages', methods=['POST'])
 def change_packages():
-    selected_apk = request.form.get('selected_apk')
+    data = request.get_json()
+    selected_apk = data.get('selected_apk') if data else request.form.get('selected_apk')
     
     if not selected_apk:
-        flash('Выберите APK файл', 'error')
-        return redirect(url_for('index'))
+        return jsonify({'status': 'error', 'message': 'Выберите APK файл'})
     
     if not os.path.exists('package_create/result.txt'):
-        flash('Сначала сгенерируйте пакеты', 'error')
-        return redirect(url_for('index'))
+        return jsonify({'status': 'error', 'message': 'Сначала сгенерируйте пакеты'})
     
     # Создаем символические ссылки для скрипта
     try:
