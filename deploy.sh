@@ -42,35 +42,6 @@ sudo update-alternatives --set java /usr/lib/jvm/java-17-openjdk-amd64/bin/java
 sudo update-alternatives --set javac /usr/lib/jvm/java-17-openjdk-amd64/bin/javac
 export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
-# Удаляем старое виртуальное окружение если есть
-echo "Удаление старого виртуального окружения..."
-rm -rf venv
-
-# Создание виртуального окружения Python
-echo "Создание нового виртуального окружения Python..."
-python3 -m venv venv
-source venv/bin/activate
-
-# Обновление pip в виртуальном окружении
-echo "Обновление pip..."
-pip install --upgrade pip
-
-# Установка Python зависимостей в виртуальное окружение с совместимыми версиями
-echo "Установка Python зависимостей..."
-pip install Flask==2.3.3
-pip install Werkzeug==2.3.7
-pip install python-dotenv==1.0.0
-pip install nltk==3.8.1
-echo "Python зависимости установлены в виртуальное окружение"
-
-# Проверяем, что виртуальное окружение создано
-if [ ! -f "venv/bin/python" ]; then
-    echo "ОШИБКА: Виртуальное окружение не создано!"
-    exit 1
-fi
-
-echo "Виртуальное окружение успешно создано: $(pwd)/venv"
-
 # Установка Android SDK Tools
 echo "Установка Android Build Tools..."
 ANDROID_HOME="/opt/android-sdk"
@@ -105,7 +76,7 @@ fi
 echo "Apktool установлен успешно!"
 
 # Определяем директорию проекта
-PROJECT_DIR="$HOME/apk-package-changer"
+PROJECT_DIR="/root/apk-package-changer"
 
 # Клонирование или обновление репозитория
 echo "Подготовка проекта..."
@@ -753,6 +724,34 @@ echo "Обновление завершено!"
 UPDATEEOF
 
 chmod +x update.sh
+
+# Теперь создаем виртуальное окружение в правильной директории проекта
+echo "Удаление старого виртуального окружения..."
+rm -rf venv
+
+# Создание виртуального окружения Python
+echo "Создание нового виртуального окружения Python..."
+python3 -m venv venv
+source venv/bin/activate
+
+# Обновление pip в виртуальном окружении
+echo "Обновление pip..."
+pip install --upgrade pip
+
+# Установка Python зависимостей в виртуальное окружение с совместимыми версиями
+echo "Установка Python зависимостей..."
+pip install Flask==2.3.3
+pip install Werkzeug==2.3.7
+pip install python-dotenv==1.0.0
+echo "Python зависимости установлены в виртуальное окружение"
+
+# Проверяем, что виртуальное окружение создано
+if [ ! -f "venv/bin/python" ]; then
+    echo "ОШИБКА: Виртуальное окружение не создано!"
+    exit 1
+fi
+
+echo "Виртуальное окружение успешно создано: $(pwd)/venv"
 
 # Установка Node.js зависимостей
 echo "Установка Node.js зависимостей..."
