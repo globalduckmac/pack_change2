@@ -1,0 +1,132 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Генерация пакетов</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('generate_packages') }}">
+                    <div class="mb-3">
+                        <label for="count" class="form-label">Количество пакетов:</label>
+                        <input type="number" class="form-control" id="count" name="count" value="10" min="1" max="1000">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Генерировать пакеты</button>
+                </form>
+                
+                {% if result_exists and used_exists %}
+                <div class="mt-3">
+                    <div class="alert alert-success">
+                        ✅ Пакеты сгенерированы и готовы к использованию
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Загрузка APK файла</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('upload_apk') }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <input type="file" class="form-control" name="apk_file" accept=".apk" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Загрузить APK</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Изменение пакетов</h5>
+            </div>
+            <div class="card-body">
+                <form id="changePackagesForm">
+                    <div class="mb-3">
+                        <label for="selected_apk" class="form-label">Выберите APK файл:</label>
+                        <select class="form-select" name="selected_apk" id="selected_apk" required>
+                            <option value="">-- Выберите APK файл --</option>
+                            {% for apk in apk_files %}
+                            <option value="{{ apk }}">{{ apk }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    {% if not result_exists %}
+                    <div class="alert alert-warning">
+                        ⚠️ Сначала сгенерируйте пакеты
+                    </div>
+                    {% endif %}
+                    
+                    {% if not apk_files %}
+                    <div class="alert alert-warning">
+                        ⚠️ Загрузите APK файл
+                    </div>
+                    {% endif %}
+                    
+                    <button type="button" class="btn btn-warning" onclick="changePackages()" 
+                            {% if not result_exists or not apk_files %}disabled{% endif %}>
+                        Поменять пакеты
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Скачать результаты</h5>
+            </div>
+            <div class="card-body">
+                <p>После обработки APK файлов, вы сможете скачать их одним архивом.</p>
+                <a href="{{ url_for('download_results') }}" class="btn btn-info">Скачать архив</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Файлы в папках</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6>old_package ({{ apk_files|length }} файлов):</h6>
+                        <ul class="list-group list-group-flush">
+                            {% for apk in apk_files %}
+                            <li class="list-group-item">{{ apk }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>new_package:</h6>
+                        <small class="text-muted">Файлы появятся после обработки</small>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>package_create:</h6>
+                        {% if result_exists %}<span class="badge bg-success">result.txt ✓</span>{% endif %}
+                        {% if used_exists %}<span class="badge bg-success">used.txt ✓</span>{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
