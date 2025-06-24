@@ -42,8 +42,12 @@ sudo update-alternatives --set java /usr/lib/jvm/java-17-openjdk-amd64/bin/java
 sudo update-alternatives --set javac /usr/lib/jvm/java-17-openjdk-amd64/bin/javac
 export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
+# Удаляем старое виртуальное окружение если есть
+echo "Удаление старого виртуального окружения..."
+rm -rf venv
+
 # Создание виртуального окружения Python
-echo "Создание виртуального окружения Python..."
+echo "Создание нового виртуального окружения Python..."
 python3 -m venv venv
 source venv/bin/activate
 
@@ -51,12 +55,21 @@ source venv/bin/activate
 echo "Обновление pip..."
 pip install --upgrade pip
 
-# Установка Python зависимостей в виртуальное окружение
+# Установка Python зависимостей в виртуальное окружение с совместимыми версиями
 echo "Установка Python зависимостей..."
 pip install Flask==2.3.3
 pip install Werkzeug==2.3.7
 pip install python-dotenv==1.0.0
+pip install nltk==3.8.1
 echo "Python зависимости установлены в виртуальное окружение"
+
+# Проверяем, что виртуальное окружение создано
+if [ ! -f "venv/bin/python" ]; then
+    echo "ОШИБКА: Виртуальное окружение не создано!"
+    exit 1
+fi
+
+echo "Виртуальное окружение успешно создано: $(pwd)/venv"
 
 # Установка Android SDK Tools
 echo "Установка Android Build Tools..."
