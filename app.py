@@ -92,7 +92,12 @@ def generate_packages():
         count = int(request.form.get('count', 10))
 
         # Запускаем скрипт генерации пакетов
-        result = subprocess.run(['python3', 'package_create/create_packeges.py'], 
+        script_path = 'package_create/create_packeges.py'
+        if not os.path.exists(script_path):
+            flash(f'Файл скрипта не найден: {script_path}', 'error')
+            return redirect(url_for('index'))
+            
+        result = subprocess.run(['python3', script_path], 
                               input=str(count), 
                               text=True, 
                               capture_output=True,

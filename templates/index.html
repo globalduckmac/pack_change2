@@ -183,6 +183,7 @@
         </div>
     </div>
 </div>
+
 <script>
 function changePackages() {
     const selectedApk = document.getElementById('selected_apk').value;
@@ -232,12 +233,6 @@ function checkProcessStatus() {
         console.error('Ошибка проверки статуса:', error);
         setTimeout(checkProcessStatus, 5000);
     });
-}
-
-// Функция для получения реального размера файла
-function getFileSize(filename) {
-    // Это заглушка - в реальности размер должен приходить с сервера
-    return Math.random() * 50; // случайный размер для демонстрации
 }
 </script>
 {% endblock %}
