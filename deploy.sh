@@ -42,17 +42,21 @@ sudo update-alternatives --set java /usr/lib/jvm/java-17-openjdk-amd64/bin/java
 sudo update-alternatives --set javac /usr/lib/jvm/java-17-openjdk-amd64/bin/javac
 export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
-# Обновление pip
-echo "Обновление pip..."
-python3 -m pip install --upgrade pip
+# Создание виртуального окружения Python
+echo "Создание виртуального окружения Python..."
+python3 -m venv venv
+source venv/bin/activate
 
-# Установка Python зависимостей
+# Обновление pip в виртуальном окружении
+echo "Обновление pip..."
+pip install --upgrade pip
+
+# Установка Python зависимостей в виртуальное окружение
 echo "Установка Python зависимостей..."
-# Устанавливаем совместимые версии Flask и Werkzeug
-python3 -m pip install --user Flask==2.3.3
-python3 -m pip install --user Werkzeug==2.3.7
-python3 -m pip install --user python-dotenv==1.0.0
-echo "Python зависимости установлены"
+pip install Flask==2.3.3
+pip install Werkzeug==2.3.7
+pip install python-dotenv==1.0.0
+echo "Python зависимости установлены в виртуальное окружение"
 
 # Установка Android SDK Tools
 echo "Установка Android Build Tools..."
@@ -757,7 +761,7 @@ Environment=PATH=/usr/bin:/usr/local/bin:$ANDROID_HOME/build-tools/$BUILD_TOOLS_
 Environment=ANDROID_HOME=$ANDROID_HOME
 Environment=PYTHONPATH=$PROJECT_DIR
 Environment=NODE_PATH=$PROJECT_DIR/node_modules
-ExecStart=/usr/bin/python3 -u app.py
+ExecStart=$PROJECT_DIR/venv/bin/python -u app.py
 Restart=always
 RestartSec=10
 StandardOutput=journal
