@@ -46,6 +46,17 @@ export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 echo "Обновление pip..."
 python3 -m pip install --upgrade pip
 
+# Установка Python зависимостей с обходом конфликтов
+echo "Установка Python зависимостей..."
+python3 -m pip install --force-reinstall --no-deps Flask==3.0.0
+python3 -m pip install --force-reinstall --no-deps python-dotenv==1.0.0
+python3 -m pip install --force-reinstall --no-deps Werkzeug==3.1.3
+python3 -m pip install --force-reinstall --no-deps Jinja2==3.1.6
+python3 -m pip install --force-reinstall --no-deps MarkupSafe==3.0.2
+python3 -m pip install --force-reinstall --no-deps itsdangerous==2.2.0
+python3 -m pip install --force-reinstall --no-deps click==8.2.1
+python3 -m pip install --force-reinstall --no-deps blinker==1.8.2
+
 # Установка Android SDK Tools
 echo "Установка Android Build Tools..."
 ANDROID_HOME="/opt/android-sdk"
@@ -728,10 +739,6 @@ echo "Обновление завершено!"
 UPDATEEOF
 
 chmod +x update.sh
-
-# Установка Python зависимостей
-echo "Установка Python зависимостей..."
-pip3 install -r requirements.txt
 
 # Установка Node.js зависимостей
 echo "Установка Node.js зависимостей..."
