@@ -73,10 +73,11 @@ APKTOOL_DIR="/usr/local/bin"
 if [ ! -f "$APKTOOL_DIR/apktool.jar" ]; then
     wget -q https://raw.githubusercontent.com/iBotPeaches/Apktool/master/scripts/linux/apktool -O /tmp/apktool
     wget -q https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.9.3.jar -O /tmp/apktool.jar
-    sudo mv /tmp/apktool /tmp/apktool.jar $APKTOOL_DIR/
+    sudo mv /tmp/apktool $APKTOOL_DIR/
+    sudo mv /tmp/apktool.jar $APKTOOL_DIR/
     sudo chmod +x $APKTOOL_DIR/apktool
-    sudo ln -sf $APKTOOL_DIR/apktool.jar $APKTOOL_DIR/apktool.jar
 fi
+echo "Apktool установлен успешно!"
 
 # Определяем директорию проекта
 PROJECT_DIR="$HOME/apk-package-changer"
@@ -768,28 +769,69 @@ sudo ufw allow 5000/tcp
 sudo ufw reload 2>/dev/null || true
 
 # Запуск и включение сервиса
-echo "Запуск сервиса..."
+echo "Настройка и запуск systemd сервиса..."
 sudo systemctl daemon-reload
 sudo systemctl enable apk-changer
 sudo systemctl start apk-changer
 
 # Ожидание запуска
 echo "Ожидание запуска сервиса..."
-sleep 5
+sleep 10
 
-# Проверка статуса
+# Получаем IP адрес сервера
+SERVER_IP=$(hostname -I | awk '{print $1}')
+
+# Проверка статуса сервиса
 echo "Проверка статуса сервиса..."
-sudo systemctl status apk-changer --no-pager
+if sudo systemctl is-active apk-changer >/dev/null 2>&1; then
+    SERVICE_STATUS="✅ РАБОТАЕТ"
+else
+    SERVICE_STATUS="❌ НЕ РАБОТАЕТ"
+fi
+
+# Проверка доступности порта
+echo "Проверка доступности веб-панели..."
+if curl -s --connect-timeout 5 http://localhost:5000 >/dev/null 2>&1; then
+    WEB_STATUS="✅ ДОСТУПНА"
+else
+    WEB_STATUS="❌ НЕ ДОСТУПНА"
+fi
+
+# Проверка процессов
+PROCESS_COUNT=$(pgrep -f "python.*app.py" | wc -l)
 
 echo ""
-echo "=== Установка завершена ==="
-echo "Проект установлен в: $PROJECT_DIR"
-echo "Веб-панель доступна по адресу: http://$(hostname -I | awk '{print $1}'):5000"
+echo "=============================================="
+echo "🎉 УСТАНОВКА APK PACKAGE CHANGER ЗАВЕРШЕНА! 🎉"
+echo "=============================================="
 echo ""
-echo "Полезные команды:"
-echo "  Статус сервиса: sudo systemctl status apk-changer"
-echo "  Логи сервиса: sudo journalctl -u apk-changer -f"
-echo "  Перезапуск: sudo systemctl restart apk-changer"
-echo "  Остановка: sudo systemctl stop apk-changer"
+echo "📍 Расположение проекта: $PROJECT_DIR"
+echo "🌐 IP адрес сервера: $SERVER_IP"
+echo "🔗 Веб-панель: http://$SERVER_IP:5000"
 echo ""
-echo "Если сервис не запустился, проверьте логи и убедитесь что порт 5000 свободен"
+echo "📊 СТАТУС СЕРВИСОВ:"
+echo "   Systemd сервис: $SERVICE_STATUS"
+echo "   Веб-панель: $WEB_STATUS"
+echo "   Python процессов: $PROCESS_COUNT"
+echo ""
+if [ "$WEB_STATUS" = "✅ ДОСТУПНА" ]; then
+    echo "🚀 ВСЕ ГОТОВО! Откройте в браузере: http://$SERVER_IP:5000"
+else
+    echo "⚠️  ПРОБЛЕМА С ЗАПУСКОМ! Проверьте логи:"
+    echo "   sudo journalctl -u apk-changer -f"
+    echo "   sudo systemctl status apk-changer"
+fi
+echo ""
+echo "🛠️  ПОЛЕЗНЫЕ КОМАНДЫ:"
+echo "   Статус: sudo systemctl status apk-changer"
+echo "   Логи: sudo journalctl -u apk-changer -f"
+echo "   Перезапуск: sudo systemctl restart apk-changer"
+echo "   Остановка: sudo systemctl stop apk-changer"
+echo "=============================================="
+
+# Показываем последние логи если есть проблемы
+if [ "$WEB_STATUS" = "❌ НЕ ДОСТУПНА" ]; then
+    echo ""
+    echo "📋 ПОСЛЕДНИЕ ЛОГИ СЕРВИСА:"
+    sudo journalctl -u apk-changer --no-pager -n 20
+fi
