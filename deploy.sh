@@ -24,7 +24,7 @@ sudo apt install -y \
     python3-venv \
     nodejs \
     npm \
-    default-jdk \
+    openjdk-17-jdk \
     build-essential \
     zip \
     unzip \
@@ -33,6 +33,14 @@ sudo apt install -y \
     python3-dev \
     python3-setuptools \
     software-properties-common
+
+# Установка Java 17 как основной версии
+echo "Настройка Java 17..."
+sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-17-openjdk-amd64/bin/java 1700
+sudo update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/java-17-openjdk-amd64/bin/javac 1700
+sudo update-alternatives --set java /usr/lib/jvm/java-17-openjdk-amd64/bin/java
+sudo update-alternatives --set javac /usr/lib/jvm/java-17-openjdk-amd64/bin/javac
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
 # Обновление pip
 echo "Обновление pip..."
@@ -658,7 +666,7 @@ JSEOF
 
 # Создаем .env файл
 cat > .env << 'ENVEOF'
-JAVA_PATH=/usr/bin/java
+JAVA_PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin/java
 ZIPALIGN_PATH=/opt/android-sdk/build-tools/34.0.0/zipalign
 APKSIGNER_PATH=/opt/android-sdk/build-tools/34.0.0/apksigner
 KEYSTORE_NAME=keystore.jks
@@ -678,7 +686,7 @@ chmod +x run.sh
 # Создаем keystore
 echo "Создание keystore..."
 if [ ! -f "keystore.jks" ]; then
-    keytool -genkey -v -keystore keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias mykey \
+    /usr/lib/jvm/java-17-openjdk-amd64/bin/keytool -genkey -v -keystore keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias mykey \
         -dname "CN=APK Changer, OU=Dev, O=Company, L=City, S=State, C=US" \
         -storepass 123456 -keypass 123456 -noprompt
 fi
