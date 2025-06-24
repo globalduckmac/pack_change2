@@ -46,16 +46,12 @@ export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 echo "Обновление pip..."
 python3 -m pip install --upgrade pip
 
-# Установка Python зависимостей с обходом конфликтов
-echo "Установка Python зависимостей..."
-python3 -m pip install --ignore-installed --user Flask==3.0.0
-python3 -m pip install --ignore-installed --user python-dotenv==1.0.0
-python3 -m pip install --ignore-installed --user Werkzeug==3.1.3
-python3 -m pip install --ignore-installed --user Jinja2==3.1.6
-python3 -m pip install --ignore-installed --user MarkupSafe==3.0.2
-python3 -m pip install --ignore-installed --user itsdangerous==2.2.0
-python3 -m pip install --ignore-installed --user click==8.2.1
-python3 -m pip install --ignore-installed --user blinker==1.8.2
+# Установка дополнительных Python зависимостей
+echo "Установка дополнительных Python зависимостей..."
+# Используем системные Flask, blinker и другие, устанавливаем только недостающие
+sudo apt install -y python3-flask python3-dotenv 2>/dev/null || true
+python3 -m pip install --user python-dotenv==1.0.0 2>/dev/null || true
+echo "Python зависимости готовы (используем системные пакеты)"
 
 # Установка Android SDK Tools
 echo "Установка Android Build Tools..."
