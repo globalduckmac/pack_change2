@@ -8,11 +8,7 @@ set -e
 
 echo "=== Установка APK Package Changer ==="
 
-# Проверка и установка от root
-if [ "$EUID" -eq 0 ]; then
-    echo "Не запускайте скрипт от root! Используйте обычного пользователя."
-    exit 1
-fi
+# Скрипт может запускаться от любого пользователя
 
 # Обновление системы
 echo "Обновление системы..."
@@ -736,6 +732,7 @@ npm install
 
 # Создание systemd сервиса
 echo "Создание systemd сервиса..."
+CURRENT_USER=$(whoami)
 sudo tee /etc/systemd/system/apk-changer.service > /dev/null << EOF
 [Unit]
 Description=APK Package Changer Web Service
@@ -743,7 +740,7 @@ After=network.target
 
 [Service]
 Type=simple
-User=$USER
+User=$CURRENT_USER
 WorkingDirectory=$PROJECT_DIR
 Environment=PATH=/usr/bin:/usr/local/bin:$ANDROID_HOME/build-tools/$BUILD_TOOLS_VERSION:$ANDROID_HOME/platform-tools
 Environment=ANDROID_HOME=$ANDROID_HOME
