@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for, flash
 import os
 import subprocess
@@ -24,7 +23,7 @@ def run_shell_command():
     global process_output, process_running
     process_output = []
     process_running = True
-    
+
     try:
         # Запускаем run.sh
         process = subprocess.Popen(['bash', 'run.sh'], 
@@ -32,13 +31,13 @@ def run_shell_command():
                                  stderr=subprocess.STDOUT, 
                                  universal_newlines=True,
                                  bufsize=1)
-        
+
         for line in iter(process.stdout.readline, ''):
             process_output.append(line.strip())
-            
+
         process.wait()
         process_output.append("Процесс завершен!")
-        
+
     except Exception as e:
         process_output.append(f"Ошибка: {str(e)}")
     finally:
@@ -50,16 +49,16 @@ def index():
     apk_files = []
     if os.path.exists('old_package'):
         apk_files = [f for f in os.listdir('old_package') if f.endswith('.apk')]
-    
+
     # Получаем список готовых APK файлов в new_package
     new_apk_files = []
     if os.path.exists('new_package'):
         new_apk_files = [f for f in os.listdir('new_package') if f.endswith('.apk')]
-    
+
     # Проверяем наличие сгенерированных пакетов
     result_exists = os.path.exists('package_create/result.txt')
     used_exists = os.path.exists('package_create/used.txt')
-    
+
     # Читаем сгенерированные пакеты для отображения
     generated_packages = []
     if result_exists:
@@ -68,7 +67,7 @@ def index():
                 generated_packages = [line.strip() for line in f.readlines() if line.strip()]
         except:
             pass
-    
+
     return render_template('index.html', 
                          apk_files=apk_files, 
                          new_apk_files=new_apk_files,
@@ -80,14 +79,14 @@ def index():
 def generate_packages():
     try:
         count = int(request.form.get('count', 10))
-        
+
         # Запускаем скрипт генерации пакетов
         result = subprocess.run(['python3', 'package_create/create_packeges.py'], 
                               input=str(count), 
                               text=True, 
                               capture_output=True,
                               cwd=os.getcwd())
-        
+
         if result.returncode == 0:
             # Сохраняем в историю
             save_to_history(count)
@@ -96,7 +95,7 @@ def generate_packages():
             flash(f'Ошибка при генерации: {result.stderr}', 'error')
     except Exception as e:
         flash(f'Ошибка: {str(e)}', 'error')
-    
+
     return redirect(url_for('index'))
 
 @app.route('/upload_apk', methods=['POST'])
@@ -104,12 +103,12 @@ def upload_apk():
     if 'apk_file' not in request.files:
         flash('Файл не выбран', 'error')
         return redirect(url_for('index'))
-    
+
     file = request.files['apk_file']
     if file.filename == '':
         flash('Файл не выбран', 'error')
         return redirect(url_for('index'))
-    
+
     if file and file.filename.endswith('.apk'):
         filename = file.filename
         filepath = os.path.join('old_package', filename)
@@ -121,31 +120,31 @@ def upload_apk():
             flash(f'Ошибка сохранения файла {filename}', 'error')
     else:
         flash('Загружайте только APK файлы', 'error')
-    
+
     return redirect(url_for('index'))
 
 @app.route('/change_packages', methods=['POST'])
 def change_packages():
     data = request.get_json()
     selected_apk = data.get('selected_apk') if data else request.form.get('selected_apk')
-    
+
     if not selected_apk:
         return jsonify({'status': 'error', 'message': 'Выберите APK файл'})
-    
+
     if not os.path.exists('package_create/result.txt'):
         return jsonify({'status': 'error', 'message': 'Сначала сгенерируйте пакеты'})
-    
+
     # Создаем символические ссылки для скрипта
     try:
         # Копируем выбранный APK как test.apk
         subprocess.run(['cp', f'old_package/{selected_apk}', 'test.apk'])
         # Копируем result.txt как package_list.txt
         subprocess.run(['cp', 'package_create/result.txt', 'package_list.txt'])
-        
+
         # Запускаем процесс в отдельном потоке
         thread = threading.Thread(target=run_shell_command)
         thread.start()
-        
+
         return jsonify({'status': 'started'})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)})
@@ -163,17 +162,17 @@ def download_results():
     if not os.path.exists('new_package') or not os.listdir('new_package'):
         flash('Нет файлов для скачивания', 'error')
         return redirect(url_for('index'))
-    
+
     # Создаем ZIP архив
     zip_filename = f'results_{datetime.now().strftime("%Y%m%d_%H%M%S")}.zip'
     zip_path = zip_filename
-    
+
     with zipfile.ZipFile(zip_path, 'w') as zipf:
         for root, dirs, files in os.walk('new_package'):
             for file in files:
                 file_path = os.path.join(root, file)
                 zipf.write(file_path, os.path.relpath(file_path, 'new_package'))
-    
+
     return send_file(zip_path, as_attachment=True, download_name=zip_filename)
 
 @app.route('/history')
@@ -219,27 +218,27 @@ def update_from_github():
         # Остановка текущих процессов
         global process_running
         process_running = False
-        
+
         # Обновление из GitHub
         result = subprocess.run(['git', 'pull', 'origin', 'main'], 
                               capture_output=True, text=True)
-        
+
         if result.returncode == 0:
             # Установка новых зависимостей если нужно
             subprocess.run(['pip3', 'install', '-r', 'requirements.txt'], 
                           capture_output=True)
             subprocess.run(['npm', 'install'], capture_output=True)
-            
+
             flash('Обновление успешно загружено! Сервер перезагружается...', 'success')
-            
+
             # Перезапуск сервера через системный сервис
             def restart_server():
                 time.sleep(2)
                 subprocess.run(['sudo', 'systemctl', 'restart', 'apk-changer'])
-            
+
             thread = threading.Thread(target=restart_server)
             thread.start()
-            
+
             return jsonify({'status': 'success', 'message': 'Обновление завершено'})
         else:
             return jsonify({'status': 'error', 'message': f'Ошибка обновления: {result.stderr}'})

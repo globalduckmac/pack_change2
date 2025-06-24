@@ -58,7 +58,7 @@
                         {% for apk in apk_files %}
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             {{ apk }}
-                            <span class="badge bg-primary rounded-pill">{{ "%.2f"|format((apk|length * 1024 / 1024)) }} MB</span>
+                            <span class="badge bg-primary rounded-pill">{{ apk_file_sizes.get(apk, 0) }} MB</span>
                         </li>
                         {% endfor %}
                     </ul>
@@ -183,4 +183,61 @@
         </div>
     </div>
 </div>
+<script>
+function changePackages() {
+    const selectedApk = document.getElementById('selected_apk').value;
+    if (!selectedApk) {
+        alert('Выберите APK файл');
+        return;
+    }
+    
+    // Отправляем запрос
+    fetch('/change_packages', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({selected_apk: selectedApk})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'started') {
+            alert('Обработка началась! Страница будет обновляться автоматически.');
+            // Начинаем проверку статуса
+            checkProcessStatus();
+        } else {
+            alert('Ошибка: ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('Ошибка: ' + error);
+    });
+}
+
+function checkProcessStatus() {
+    fetch('/process_status')
+    .then(response => response.json())
+    .then(data => {
+        if (data.running) {
+            // Показываем прогресс
+            console.log('Обработка продолжается...');
+            // Обновляем через 2 секунды
+            setTimeout(checkProcessStatus, 2000);
+        } else {
+            // Процесс завершен, перезагружаем страницу
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка проверки статуса:', error);
+        setTimeout(checkProcessStatus, 5000);
+    });
+}
+
+// Функция для получения реального размера файла
+function getFileSize(filename) {
+    // Это заглушка - в реальности размер должен приходить с сервера
+    return Math.random() * 50; // случайный размер для демонстрации
+}
+</script>
 {% endblock %}
