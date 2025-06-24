@@ -8,8 +8,6 @@ set -e
 
 echo "=== Установка APK Package Changer ==="
 
-# Скрипт может запускаться от любого пользователя
-
 # Обновление системы
 echo "Обновление системы..."
 sudo apt update && sudo apt upgrade -y
