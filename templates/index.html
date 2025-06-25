@@ -50,12 +50,15 @@
                             ✅ Пакеты сгенерированы успешно!
                             {% if generated_packages %}
                             <div class="mt-2">
-                                <h6>Сгенерированные пакеты ({{ generated_packages|length }}):</h6>
-                                <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background: #f8f9fa;">
+                                <h6>Последние сгенерированные пакеты ({{ generated_packages|length }}):</h6>
+                                <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background: #f8f9fa; font-family: monospace;">
                                     {% for package in generated_packages %}
-                                    <small class="d-block">{{ package }}</small>
+                                    <small class="d-block">📦 {{ package }}</small>
                                     {% endfor %}
                                 </div>
+                                <small class="text-muted mt-1 d-block">
+                                    <strong>Всего создано:</strong> {{ generated_packages|length }} пакетов
+                                </small>
                             </div>
                             {% endif %}
                         </div>
@@ -213,8 +216,10 @@
                                 <h6>Статус генерации пакетов:</h6>
                                 <div class="border p-2" style="max-height: 150px; overflow-y: auto;">
                                     {% if result_exists %}
-                                        <small class="d-block text-success">✅ Пакеты сгенерированы</small>
-                                        <small class="d-block">Количество: {{ generated_packages|length }}</small>
+                                        <small class="d-block text-success">✅ Последняя генерация: {{ generated_packages|length }} пакетов</small>
+                                        {% if used_packages %}
+                                        <small class="d-block text-info">📝 Всего использовано: {{ used_packages|length }} пакетов</small>
+                                        {% endif %}
                                     {% else %}
                                         <small class="text-muted">Нет сгенерированных пакетов</small>
                                     {% endif %}
@@ -227,10 +232,29 @@
         </div>
 
         <div class="row mt-4">
-            <div class="col-12">
+            <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        <h5>История</h5>
+                        <h5>Все созданные пакеты</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if used_packages %}
+                        <p><strong>Всего создано пакетов:</strong> {{ used_packages|length }}</p>
+                        <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background: #f8f9fa; font-family: monospace;">
+                            {% for package in used_packages %}
+                            <small class="d-block">📦 {{ package }}</small>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-muted">Пакеты ещё не создавались</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>История и управление</h5>
                     </div>
                     <div class="card-body">
                         <a href="{{ url_for('history') }}" class="btn btn-secondary">Посмотреть историю</a>

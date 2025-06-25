@@ -55,12 +55,13 @@ def run_shell_command():
 
 @app.route('/')
 def index():
-    project_dir = '/root/apk-package-changer'
+    # Используем относительные пути от текущей рабочей директории
+    current_dir = os.getcwd()
 
     # Получаем список APK файлов в old_package
     apk_files = []
     apk_file_sizes = {}
-    old_package_dir = os.path.join(project_dir, 'old_package')
+    old_package_dir = 'old_package'
     if os.path.exists(old_package_dir):
         apk_files = [f for f in os.listdir(old_package_dir) if f.endswith('.apk')]
         # Получаем размеры файлов
@@ -76,7 +77,7 @@ def index():
     # Получаем список готовых APK файлов в new_package
     new_apk_files = []
     new_apk_file_sizes = {}
-    new_package_dir = os.path.join(project_dir, 'new_package')
+    new_package_dir = 'new_package'
     if os.path.exists(new_package_dir):
         new_apk_files = [f for f in os.listdir(new_package_dir) if f.endswith('.apk')]
         # Получаем размеры новых файлов
@@ -90,17 +91,33 @@ def index():
                 new_apk_file_sizes[apk_file] = 0
 
     # Проверяем наличие сгенерированных пакетов
-    result_exists = os.path.exists(os.path.join(project_dir, 'package_create', 'result.txt'))
-    used_exists = os.path.exists(os.path.join(project_dir, 'package_create', 'used.txt'))
+    result_file = os.path.join('package_create', 'result.txt')
+    used_file = os.path.join('package_create', 'used.txt')
+    result_exists = os.path.exists(result_file)
+    used_exists = os.path.exists(used_file)
 
     # Читаем сгенерированные пакеты для отображения
     generated_packages = []
     if result_exists:
         try:
-            with open(os.path.join(project_dir, 'package_create', 'result.txt'), 'r') as f:
+            with open(result_file, 'r', encoding='utf-8') as f:
                 generated_packages = [line.strip() for line in f.readlines() if line.strip()]
-        except:
-            pass
+        except Exception as e:
+            print(f"Ошибка чтения result.txt: {e}")
+
+    # Читаем уже использованные пакеты
+    used_packages = []
+    if used_exists:
+        try:
+            with open(used_file, 'r', encoding='utf-8') as f:
+                used_packages = [line.strip() for line in f.readlines() if line.strip()]
+        except Exception as e:
+            print(f"Ошибка чтения used.txt: {e}")
+
+    print(f"=== ОТЛАДКА ОТОБРАЖЕНИЯ ===")
+    print(f"result_exists: {result_exists}")
+    print(f"Количество generated_packages: {len(generated_packages)}")
+    print(f"Количество used_packages: {len(used_packages)}")
 
     return render_template('index.html', 
                          apk_files=apk_files, 
@@ -108,6 +125,7 @@ def index():
                          result_exists=result_exists,
                          used_exists=used_exists,
                          generated_packages=generated_packages,
+                         used_packages=used_packages,
                          apk_file_sizes=apk_file_sizes,
                          new_apk_file_sizes=new_apk_file_sizes)
 
@@ -116,26 +134,15 @@ def generate_packages():
     try:
         count = int(request.form.get('count', 10))
 
-        # Запускаем скрипт генерации пакетов
-        # Используем абсолютный путь к директории проекта
-        project_dir = '/root/apk-package-changer'
-        script_path = os.path.join(project_dir, 'package_create', 'create_packeges.py')
-
-        print(f"=== ОТЛАДКА ПУТЕЙ ===")
-        print(f"Текущая рабочая директория: {os.getcwd()}")
-        print(f"Директория проекта: {project_dir}")
-        print(f"Полный путь к скрипту: {script_path}")
-        print(f"Файл скрипта существует: {os.path.exists(script_path)}")
-        print(f"Содержимое package_create/: {os.listdir(os.path.join(project_dir, 'package_create')) if os.path.exists(os.path.join(project_dir, 'package_create')) else 'Папка не существует'}")
-        print(f"Содержимое текущей директории: {os.listdir('.')}")
-
         # Проверяем существование скрипта
         script_path = os.path.join('package_create', 'create_packeges.py')
         package_create_dir = 'package_create'
 
+        print(f"=== ОТЛАДКА ГЕНЕРАЦИИ ===")
+        print(f"Текущая рабочая директория: {os.getcwd()}")
         print(f"Путь к скрипту: {script_path}")
         print(f"Файл существует: {os.path.exists(script_path)}")
-        print(f"Рабочая директория: {package_create_dir}")
+        print(f"Рабочая директория для скрипта: {package_create_dir}")
 
         if not os.path.exists(script_path):
             flash(f'Файл скрипта не найден: {script_path}', 'error')
@@ -148,14 +155,32 @@ def generate_packages():
                               capture_output=True,
                               cwd=package_create_dir)
 
+        print(f"Результат выполнения скрипта:")
+        print(f"Return code: {result.returncode}")
+        print(f"Stdout: {result.stdout}")
+        print(f"Stderr: {result.stderr}")
+
         if result.returncode == 0:
-            # Сохраняем в историю
-            save_to_history(count)
-            flash(f'Успешно сгенерировано {count} пакетов!', 'success')
+            # Проверяем, что файлы действительно созданы
+            result_file = os.path.join(package_create_dir, 'result.txt')
+            if os.path.exists(result_file):
+                # Читаем созданные пакеты для подтверждения
+                with open(result_file, 'r', encoding='utf-8') as f:
+                    created_packages = [line.strip() for line in f.readlines() if line.strip()]
+                
+                print(f"Создано пакетов: {len(created_packages)}")
+                print(f"Первые 5 пакетов: {created_packages[:5]}")
+                
+                # Сохраняем в историю с дополнительной информацией
+                save_to_history(count, created_packages[:5])  # Сохраняем первые 5 пакетов как пример
+                flash(f'Успешно сгенерировано {len(created_packages)} пакетов!', 'success')
+            else:
+                flash('Файл result.txt не был создан', 'error')
         else:
             flash(f'Ошибка при генерации: {result.stderr}', 'error')
     except Exception as e:
         flash(f'Ошибка: {str(e)}', 'error')
+        print(f"Исключение: {e}")
 
     return redirect(url_for('index'))
 
@@ -259,13 +284,16 @@ def delete_package_history(index):
         flash('Запись удалена из истории', 'success')
     return redirect(url_for('history'))
 
-def save_to_history(count):
+def save_to_history(count, package_examples=None):
     history_data = load_history()
-    history_data.append({
+    entry = {
         'date': datetime.now().isoformat(),
         'count': count,
         'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    })
+    }
+    if package_examples:
+        entry['examples'] = package_examples
+    history_data.append(entry)
     save_history(history_data)
 
 def load_history():
