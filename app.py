@@ -1,4 +1,3 @@
-# The issue was due to missing `apk_file_sizes` in the template context; corrected code ensures it's properly initialized and passed.
 from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for, flash
 import os
 import subprocess
@@ -57,7 +56,7 @@ def run_shell_command():
 @app.route('/')
 def index():
     project_dir = '/root/apk-package-changer'
-    
+
     # Получаем список APK файлов в old_package
     apk_files = []
     apk_file_sizes = {}
@@ -121,7 +120,7 @@ def generate_packages():
         # Используем абсолютный путь к директории проекта
         project_dir = '/root/apk-package-changer'
         script_path = os.path.join(project_dir, 'package_create', 'create_packeges.py')
-        
+
         print(f"=== ОТЛАДКА ПУТЕЙ ===")
         print(f"Текущая рабочая директория: {os.getcwd()}")
         print(f"Директория проекта: {project_dir}")
@@ -129,33 +128,33 @@ def generate_packages():
         print(f"Файл скрипта существует: {os.path.exists(script_path)}")
         print(f"Содержимое package_create/: {os.listdir(os.path.join(project_dir, 'package_create')) if os.path.exists(os.path.join(project_dir, 'package_create')) else 'Папка не существует'}")
         print(f"Содержимое текущей директории: {os.listdir('.')}")
-        
-        # Проверяем, существует ли файл локально в текущей директории
-        local_script_path = os.path.join('.', 'package_create', 'create_packeges.py')
-        print(f"Локальный путь к скрипту: {local_script_path}")
-        print(f"Локальный файл существует: {os.path.exists(local_script_path)}")
-        
-        # Проверяем оба возможных расположения файла
-        if os.path.exists(script_path):
-            work_dir = project_dir
-            script_name = 'create_packeges.py'
-        elif os.path.exists(local_script_path):
-            work_dir = os.getcwd()
-            script_name = 'create_packeges.py'
-        else:
-            flash(f'Файл скрипта не найден ни по пути {script_path}, ни по пути {local_script_path}', 'error')
+
+        # Проверяем существование скрипта
+        script_source = os.path.join('package_create', 'create_packeges.py')
+        script_target = 'temp_create_packages.py'
+
+        print(f"Источник скрипта: {script_source}")
+        print(f"Файл существует: {os.path.exists(script_source)}")
+
+        if not os.path.exists(script_source):
+            flash(f'Файл скрипта не найден: {script_source}', 'error')
             return redirect(url_for('index'))
 
-        print(f"Рабочая директория для выполнения: {work_dir}")
-        print(f"Переходим в package_create и запускаем: {script_name}")
+        # Копируем скрипт в корневую директорию
+        import shutil
+        shutil.copy2(script_source, script_target)
+        print(f"Скрипт скопирован в: {script_target}")
 
-        # Переходим в папку package_create и запускаем скрипт
-        package_create_dir = os.path.join(work_dir, 'package_create')
-        result = subprocess.run(['python3', script_name], 
+        # Запускаем скрипт из корневой директории
+        result = subprocess.run(['python3', script_target], 
                               input=str(count), 
                               text=True, 
                               capture_output=True,
-                              cwd=package_create_dir)
+                              cwd=os.getcwd())
+
+        # Удаляем временный файл
+        if os.path.exists(script_target):
+            os.remove(script_target)
 
         if result.returncode == 0:
             # Сохраняем в историю
@@ -181,10 +180,10 @@ def upload_apk():
 
     if file and file.filename.endswith('.apk'):
         filename = file.filename
-        
+
         # Создаем папку old_package если она не существует
         os.makedirs('old_package', exist_ok=True)
-        
+
         filepath = os.path.join('old_package', filename)
         try:
             file.save(filepath)
