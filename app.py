@@ -122,20 +122,39 @@ def generate_packages():
         project_dir = '/root/apk-package-changer'
         script_path = os.path.join(project_dir, 'package_create', 'create_packeges.py')
         
-        print(f"Ищем файл: {script_path}")
-        print(f"Файл существует: {os.path.exists(script_path)}")
-        print(f"Рабочая директория: {os.getcwd()}")
+        print(f"=== ОТЛАДКА ПУТЕЙ ===")
+        print(f"Текущая рабочая директория: {os.getcwd()}")
+        print(f"Директория проекта: {project_dir}")
+        print(f"Полный путь к скрипту: {script_path}")
+        print(f"Файл скрипта существует: {os.path.exists(script_path)}")
+        print(f"Содержимое package_create/: {os.listdir(os.path.join(project_dir, 'package_create')) if os.path.exists(os.path.join(project_dir, 'package_create')) else 'Папка не существует'}")
+        print(f"Содержимое текущей директории: {os.listdir('.')}")
         
-        if not os.path.exists(script_path):
-            flash(f'Файл скрипта не найден: {script_path}', 'error')
+        # Проверяем, существует ли файл локально в текущей директории
+        local_script_path = os.path.join('.', 'package_create', 'create_packeges.py')
+        print(f"Локальный путь к скрипту: {local_script_path}")
+        print(f"Локальный файл существует: {os.path.exists(local_script_path)}")
+        
+        # Используем тот путь, который существует
+        if os.path.exists(script_path):
+            final_script_path = script_path
+            work_dir = project_dir
+        elif os.path.exists(local_script_path):
+            final_script_path = local_script_path
+            work_dir = os.getcwd()
+        else:
+            flash(f'Файл скрипта не найден ни по пути {script_path}, ни по пути {local_script_path}', 'error')
             return redirect(url_for('index'))
 
+        print(f"Используем скрипт: {final_script_path}")
+        print(f"Рабочая директория для выполнения: {work_dir}")
+
         # Используем полный абсолютный путь к скрипту
-        result = subprocess.run(['python3', script_path], 
+        result = subprocess.run(['python3', final_script_path], 
                               input=str(count), 
                               text=True, 
                               capture_output=True,
-                              cwd=project_dir)
+                              cwd=work_dir)
 
         if result.returncode == 0:
             # Сохраняем в историю
