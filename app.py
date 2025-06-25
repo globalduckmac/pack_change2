@@ -146,6 +146,12 @@ def generate_packages():
     try:
         count = int(request.form.get('count', 10))
 
+        # Очищаем result.txt перед генерацией новых пакетов
+        result_file = os.path.join('package_create', 'result.txt')
+        if os.path.exists(result_file):
+            open(result_file, 'w').close()  # Очищаем файл
+            print("result.txt очищен перед новой генерацией")
+
         # Проверяем существование скрипта
         script_path = os.path.join('package_create', 'create_packeges.py')
         package_create_dir = 'package_create'

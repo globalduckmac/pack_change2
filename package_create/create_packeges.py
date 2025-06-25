@@ -22,8 +22,9 @@ def load_used_packages(filename):
     with open(filename, 'r') as f:
         return set(line.strip() for line in f)
 
-def save_packages(packages, filename):
-    with open(filename, 'a') as f:
+def save_packages(packages, filename, append=True):
+    mode = 'a' if append else 'w'
+    with open(filename, mode) as f:
         for pkg in packages:
             f.write(pkg + '\n')
 
@@ -49,8 +50,8 @@ def main():
         if pkg not in used:
             new_packages.add(pkg)
 
-    save_packages(new_packages, "result.txt")
-    save_packages(new_packages, "used.txt")
+    save_packages(new_packages, "result.txt", append=False)  # Перезаписываем result.txt
+    save_packages(new_packages, "used.txt", append=True)      # Добавляем в used.txt
     print(f"{len(new_packages)} уникальных пакетов записано в result.txt и used.txt")
 
 if __name__ == "__main__":
