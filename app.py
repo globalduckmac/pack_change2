@@ -115,14 +115,22 @@ def generate_packages():
 
         # Запускаем скрипт генерации пакетов
         script_path = 'package_create/create_packeges.py'
+        current_dir = os.getcwd()
+        full_script_path = os.path.join(current_dir, script_path)
+        
+        print(f"Текущая директория: {current_dir}")
+        print(f"Ищем файл: {full_script_path}")
+        print(f"Файл существует: {os.path.exists(full_script_path)}")
+        
         if not os.path.exists(script_path):
-            flash(f'Файл скрипта не найден: {script_path}', 'error')
+            flash(f'Файл скрипта не найден: {script_path} в директории {current_dir}', 'error')
             return redirect(url_for('index'))
 
         result = subprocess.run(['python3', script_path], 
                               input=str(count), 
                               text=True, 
-                              capture_output=True)
+                              capture_output=True,
+                              cwd=os.getcwd())
 
         if result.returncode == 0:
             # Сохраняем в историю
