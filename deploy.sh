@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 # Скрипт развертывания APK Package Changer на Ubuntu 22
@@ -50,7 +49,7 @@ BUILD_TOOLS_VERSION="34.0.0"
 if [ ! -d "$ANDROID_HOME" ]; then
     sudo mkdir -p $ANDROID_HOME
     sudo chown $USER:$USER $ANDROID_HOME
-    
+
     # Скачиваем command line tools
     wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdline-tools.zip
     unzip -q cmdline-tools.zip -d $ANDROID_HOME
@@ -58,7 +57,7 @@ if [ ! -d "$ANDROID_HOME" ]; then
     mkdir -p $ANDROID_HOME/cmdline-tools
     mv $ANDROID_HOME/cmdline-tools-latest $ANDROID_HOME/cmdline-tools/latest
     rm cmdline-tools.zip
-    
+
     # Устанавливаем build-tools
     yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;$BUILD_TOOLS_VERSION" "platform-tools"
 fi
@@ -120,20 +119,20 @@ def run_shell_command():
     global process_output, process_running
     process_output = []
     process_running = True
-    
+
     try:
         process = subprocess.Popen(['bash', 'run.sh'], 
                                  stdout=subprocess.PIPE, 
                                  stderr=subprocess.STDOUT, 
                                  universal_newlines=True,
                                  bufsize=1)
-        
+
         for line in iter(process.stdout.readline, ''):
             process_output.append(line.strip())
-            
+
         process.wait()
         process_output.append("Процесс завершен!")
-        
+
     except Exception as e:
         process_output.append(f"Ошибка: {str(e)}")
     finally:
@@ -144,10 +143,10 @@ def index():
     apk_files = []
     if os.path.exists('old_package'):
         apk_files = [f for f in os.listdir('old_package') if f.endswith('.apk')]
-    
+
     result_exists = os.path.exists('package_create/result.txt')
     used_exists = os.path.exists('package_create/used.txt')
-    
+
     return render_template('index.html', 
                          apk_files=apk_files, 
                          result_exists=result_exists,
@@ -157,12 +156,12 @@ def index():
 def generate_packages():
     try:
         count = int(request.form.get('count', 10))
-        
+
         result = subprocess.run(['python3', 'package_create/create_packeges.py'], 
                               input=str(count), 
                               text=True, 
                               capture_output=True)
-        
+
         if result.returncode == 0:
             save_to_history(count)
             flash(f'Успешно сгенерировано {count} пакетов!', 'success')
@@ -170,7 +169,7 @@ def generate_packages():
             flash(f'Ошибка при генерации: {result.stderr}', 'error')
     except Exception as e:
         flash(f'Ошибка: {str(e)}', 'error')
-    
+
     return redirect(url_for('index'))
 
 @app.route('/upload_apk', methods=['POST'])
@@ -178,40 +177,40 @@ def upload_apk():
     if 'apk_file' not in request.files:
         flash('Файл не выбран', 'error')
         return redirect(url_for('index'))
-    
+
     file = request.files['apk_file']
     if file.filename == '':
         flash('Файл не выбран', 'error')
         return redirect(url_for('index'))
-    
+
     if file and file.filename.endswith('.apk'):
         filename = file.filename
         file.save(os.path.join('old_package', filename))
         flash(f'Файл {filename} успешно загружен!', 'success')
     else:
         flash('Загружайте только APK файлы', 'error')
-    
+
     return redirect(url_for('index'))
 
 @app.route('/change_packages', methods=['POST'])
 def change_packages():
     selected_apk = request.form.get('selected_apk')
-    
+
     if not selected_apk:
         flash('Выберите APK файл', 'error')
         return redirect(url_for('index'))
-    
+
     if not os.path.exists('package_create/result.txt'):
         flash('Сначала сгенерируйте пакеты', 'error')
         return redirect(url_for('index'))
-    
+
     try:
         subprocess.run(['cp', f'old_package/{selected_apk}', 'test.apk'])
         subprocess.run(['cp', 'package_create/result.txt', 'package_list.txt'])
-        
+
         thread = threading.Thread(target=run_shell_command)
         thread.start()
-        
+
         return jsonify({'status': 'started'})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)})
@@ -229,16 +228,16 @@ def download_results():
     if not os.path.exists('new_package') or not os.listdir('new_package'):
         flash('Нет файлов для скачивания', 'error')
         return redirect(url_for('index'))
-    
+
     zip_filename = f'results_{datetime.now().strftime("%Y%m%d_%H%M%S")}.zip'
     zip_path = zip_filename
-    
+
     with zipfile.ZipFile(zip_path, 'w') as zipf:
         for root, dirs, files in os.walk('new_package'):
             for file in files:
                 file_path = os.path.join(root, file)
                 zipf.write(file_path, os.path.relpath(file_path, 'new_package'))
-    
+
     return send_file(zip_path, as_attachment=True, download_name=zip_filename)
 
 @app.route('/history')
@@ -250,15 +249,15 @@ def history():
 def update_from_github():
     try:
         result = subprocess.run(['bash', 'update.sh'], capture_output=True, text=True)
-        
+
         if result.returncode == 0:
             flash('Обновление успешно! Перезапустите сервис.', 'success')
         else:
             flash(f'Ошибка обновления: {result.stderr}', 'error')
-            
+
     except Exception as e:
         flash(f'Ошибка: {str(e)}', 'error')
-    
+
     return redirect(url_for('index'))
 
 def save_to_history(count):
@@ -298,12 +297,12 @@ def generate_package():
     words1 = ['com', 'org', 'net', 'app', 'pro', 'dev']
     words2 = ['android', 'mobile', 'app', 'game', 'tool', 'util', 'social', 'media', 'photo', 'video']
     words3 = ['manager', 'viewer', 'editor', 'player', 'browser', 'scanner', 'tracker', 'helper', 'boost', 'cleaner']
-    
+
     word1 = random.choice(words1)
     word2 = random.choice(words2)
     word3 = random.choice(words3)
     suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=3))
-    
+
     return f"{word1}.{word2}.{word3}{suffix}"
 
 def load_used_packages(filename):
@@ -465,7 +464,7 @@ async function main(args) {
     for (let index = 0; index < packages.length; index++) {
         const newPackageName = packages[index];
         console.log('newPackageName', newPackageName);
-        
+
         const newApkPath = path.join(workingDir, `${newPackageName}.apk`);
         const newAlignedApkPath = path.join(workingDir, `aligned_${newPackageName}.apk`);
         const newSignedApkPath = path.join(workingDir, `signed_${newPackageName}.apk`);
@@ -484,7 +483,7 @@ async function main(args) {
 
         code = await runCommand(`${apksignerPath} sign --ks ${keystorePath} --ks-key-alias ${keyAlias} --ks-pass pass:${keystorePassword} --key-pass pass:${keyPassword} --out ${newSignedApkPath} ${newAlignedApkPath}`, workingDir);
         console.log('sign code: ', code);
-        
+
         if (code == 0) {
             if (fs.existsSync(newAlignedApkPath)) {
                 fs.unlinkSync(newAlignedApkPath);
@@ -502,7 +501,7 @@ async function main(args) {
     if (fs.existsSync(decodedApkPath)) {
         fs.rmSync(decodedApkPath, { recursive: true });
     }
-    
+
     console.log('Done!');
 }
 
@@ -510,9 +509,10 @@ main(process.argv.slice(2));
 JSEOF
 
 # Создаем базовые HTML шаблоны
-mkdir -p templates
+if [ ! -d "templates" ]; then
+    mkdir -p templates
 
-cat > templates/base.html << 'HTMLEOF'
+    cat > templates/base.html << 'HTMLEOF'
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -552,7 +552,7 @@ cat > templates/base.html << 'HTMLEOF'
 </html>
 HTMLEOF
 
-cat > templates/index.html << 'HTMLEOF'
+    cat > templates/index.html << 'HTMLEOF'
 {% extends "base.html" %}
 
 {% block content %}
@@ -567,7 +567,7 @@ cat > templates/index.html << 'HTMLEOF'
             <button type="submit" class="btn btn-primary">Сгенерировать</button>
         </form>
     </div>
-    
+
     <div class="col-md-6">
         <h3>2. Загрузить APK</h3>
         <form method="POST" action="/upload_apk" enctype="multipart/form-data">
@@ -613,7 +613,7 @@ cat > templates/index.html << 'HTMLEOF'
 {% endblock %}
 HTMLEOF
 
-cat > templates/history.html << 'HTMLEOF'
+    cat > templates/history.html << 'HTMLEOF'
 {% extends "base.html" %}
 
 {% block content %}
@@ -641,6 +641,10 @@ cat > templates/history.html << 'HTMLEOF'
 <a href="/" class="btn btn-primary">Назад</a>
 {% endblock %}
 HTMLEOF
+
+else
+    echo "Шаблоны уже существуют, пропускаем создание"
+fi
 
 # Создаем requirements.txt
 cat > requirements.txt << 'PYEOF'
