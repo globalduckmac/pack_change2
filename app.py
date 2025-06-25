@@ -130,31 +130,23 @@ def generate_packages():
         print(f"Содержимое текущей директории: {os.listdir('.')}")
 
         # Проверяем существование скрипта
-        script_source = os.path.join('package_create', 'create_packeges.py')
-        script_target = 'temp_create_packages.py'
+        script_path = os.path.join('package_create', 'create_packeges.py')
+        package_create_dir = 'package_create'
 
-        print(f"Источник скрипта: {script_source}")
-        print(f"Файл существует: {os.path.exists(script_source)}")
+        print(f"Путь к скрипту: {script_path}")
+        print(f"Файл существует: {os.path.exists(script_path)}")
+        print(f"Рабочая директория: {package_create_dir}")
 
-        if not os.path.exists(script_source):
-            flash(f'Файл скрипта не найден: {script_source}', 'error')
+        if not os.path.exists(script_path):
+            flash(f'Файл скрипта не найден: {script_path}', 'error')
             return redirect(url_for('index'))
 
-        # Копируем скрипт в корневую директорию
-        import shutil
-        shutil.copy2(script_source, script_target)
-        print(f"Скрипт скопирован в: {script_target}")
-
-        # Запускаем скрипт из корневой директории
-        result = subprocess.run(['python3', script_target], 
+        # Запускаем скрипт из папки package_create
+        result = subprocess.run(['python3', 'create_packeges.py'], 
                               input=str(count), 
                               text=True, 
                               capture_output=True,
-                              cwd=os.getcwd())
-
-        # Удаляем временный файл
-        if os.path.exists(script_target):
-            os.remove(script_target)
+                              cwd=package_create_dir)
 
         if result.returncode == 0:
             # Сохраняем в историю
