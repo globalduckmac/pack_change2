@@ -16,6 +16,16 @@ os.makedirs('old_package', exist_ok=True)
 os.makedirs('new_package', exist_ok=True)
 os.makedirs('package_create', exist_ok=True)
 
+# Проверяем права доступа к папкам
+try:
+    # Проверяем, что можем записывать в папки
+    test_dirs = ['old_package', 'new_package', 'package_create']
+    for test_dir in test_dirs:
+        if not os.access(test_dir, os.W_OK):
+            print(f"ПРЕДУПРЕЖДЕНИЕ: Нет прав записи в папку {test_dir}")
+except Exception as e:
+    print(f"Ошибка при проверке папок: {e}")
+
 # Глобальная переменная для процесса
 process_output = []
 process_running = False
@@ -139,13 +149,20 @@ def upload_apk():
 
     if file and file.filename.endswith('.apk'):
         filename = file.filename
+        
+        # Создаем папку old_package если она не существует
+        os.makedirs('old_package', exist_ok=True)
+        
         filepath = os.path.join('old_package', filename)
-        file.save(filepath)
-        # Проверяем, что файл действительно сохранился
-        if os.path.exists(filepath):
-            flash(f'Файл {filename} успешно загружен!', 'success')
-        else:
-            flash(f'Ошибка сохранения файла {filename}', 'error')
+        try:
+            file.save(filepath)
+            # Проверяем, что файл действительно сохранился
+            if os.path.exists(filepath):
+                flash(f'Файл {filename} успешно загружен!', 'success')
+            else:
+                flash(f'Ошибка сохранения файла {filename}', 'error')
+        except Exception as e:
+            flash(f'Ошибка при сохранении файла: {str(e)}', 'error')
     else:
         flash('Загружайте только APK файлы', 'error')
 
