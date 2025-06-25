@@ -16,7 +16,8 @@
                         <thead>
                             <tr>
                                 <th>Дата и время</th>
-                                <th>Количество пакетов</th>
+                                <th>Тип операции</th>
+                                <th>Детали</th>
                                 <th>Действия</th>
                             </tr>
                         </thead>
@@ -24,12 +25,56 @@
                             {% for item in history %}
                             <tr>
                                 <td>{{ item.timestamp }}</td>
-                                <td>{{ item.count }}</td>
                                 <td>
+                                    {% if item.type == 'generation' %}
+                                        <span class="badge bg-primary">📦 Генерация пакетов</span>
+                                    {% elif item.type == 'apk_processing' %}
+                                        <span class="badge bg-success">🔧 Обработка APK</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">📦 Генерация</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.type == 'generation' %}
+                                        Создано {{ item.count }} пакетов
+                                        {% if item.examples %}
+                                        <details class="mt-1">
+                                            <summary>Примеры пакетов</summary>
+                                            <small>
+                                                {% for pkg in item.examples %}
+                                                {{ pkg }}<br>
+                                                {% endfor %}
+                                            </small>
+                                        </details>
+                                        {% endif %}
+                                    {% elif item.type == 'apk_processing' %}
+                                        <strong>APK:</strong> {{ item.apk_name }}<br>
+                                        <strong>Создано пакетов:</strong> {{ item.packages_count }}
+                                        {% if item.packages_examples %}
+                                        <details class="mt-1">
+                                            <summary>Примеры созданных пакетов</summary>
+                                            <small>
+                                                {% for pkg in item.packages_examples %}
+                                                {{ pkg }}<br>
+                                                {% endfor %}
+                                            </small>
+                                        </details>
+                                        {% endif %}
+                                    {% else %}
+                                        {{ item.count }} пакетов
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if item.type == 'apk_processing' %}
+                                        <a href="{{ url_for('download_packages_by_apk', apk_name=item.apk_name) }}" 
+                                           class="btn btn-sm btn-info mb-1">
+                                            📥 Скачать APK
+                                        </a><br>
+                                    {% endif %}
                                     <a href="{{ url_for('delete_package_history', index=loop.index0) }}" 
                                        class="btn btn-sm btn-danger"
                                        onclick="return confirm('Вы уверены, что хотите удалить эту запись?')">
-                                        Удалить
+                                        🗑️ Удалить
                                     </a>
                                 </td>
                             </tr>

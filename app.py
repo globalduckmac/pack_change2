@@ -28,9 +28,10 @@ except Exception as e:
 # Глобальная переменная для процесса
 process_output = []
 process_running = False
+current_operation = None
 
 def run_shell_command():
-    global process_output, process_running
+    global process_output, process_running, current_operation
     process_output = []
     process_running = True
 
@@ -47,6 +48,17 @@ def run_shell_command():
 
         process.wait()
         process_output.append("Процесс завершен!")
+
+        # Сохраняем в историю после успешного завершения
+        if current_operation and process.returncode == 0:
+            save_apk_operation_to_history(current_operation)
+            current_operation = None
+
+        # Очищаем result.txt после обработки, чтобы использовались только новые пакеты
+        result_file = os.path.join('package_create', 'result.txt')
+        if os.path.exists(result_file):
+            open(result_file, 'w').close()  # Очищаем файл
+            process_output.append("Список пакетов очищен - готов к новой генерации")
 
     except Exception as e:
         process_output.append(f"Ошибка: {str(e)}")
@@ -240,11 +252,25 @@ def change_packages():
         target_packages = 'package_list.txt'
         subprocess.run(['cp', result_file, target_packages])
 
+        # Сохраняем информацию о текущей операции для истории
+        result_packages = []
+        with open(result_file, 'r', encoding='utf-8') as f:
+            result_packages = [line.strip() for line in f.readlines() if line.strip()]
+        
+        # Сохраняем в глобальную переменную для использования после завершения процесса
+        global current_operation
+        current_operation = {
+            'apk_name': selected_apk,
+            'packages_count': len(result_packages),
+            'packages': result_packages[:5]  # Первые 5 для примера
+        }
+
         print(f"=== ОТЛАДКА СМЕНЫ ПАКЕТОВ ===")
         print(f"Выбранный APK: {selected_apk}")
         print(f"Исходный файл: {source_apk}, существует: {os.path.exists(source_apk)}")
         print(f"Целевой APK: {target_apk}, создан: {os.path.exists(target_apk)}")
         print(f"Список пакетов: {target_packages}, создан: {os.path.exists(target_packages)}")
+        print(f"Количество пакетов для обработки: {len(result_packages)}")
 
         # Запускаем процесс в отдельном потоке
         thread = threading.Thread(target=run_shell_command)
@@ -300,10 +326,24 @@ def save_to_history(count, package_examples=None):
     entry = {
         'date': datetime.now().isoformat(),
         'count': count,
-        'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        'type': 'generation'
     }
     if package_examples:
         entry['examples'] = package_examples
+    history_data.append(entry)
+    save_history(history_data)
+
+def save_apk_operation_to_history(operation):
+    history_data = load_history()
+    entry = {
+        'date': datetime.now().isoformat(),
+        'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        'type': 'apk_processing',
+        'apk_name': operation['apk_name'],
+        'packages_count': operation['packages_count'],
+        'packages_examples': operation['packages']
+    }
     history_data.append(entry)
     save_history(history_data)
 
@@ -320,6 +360,67 @@ def load_history():
 def save_history(data):
     with open('history.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+
+@app.route('/clear_all_packages', methods=['POST'])
+def clear_all_packages():
+    try:
+        # Очищаем все директории с пакетами
+        directories = ['new_package', 'old_package']
+        for directory in directories:
+            if os.path.exists(directory):
+                for file in os.listdir(directory):
+                    file_path = os.path.join(directory, file)
+                    if os.path.isfile(file_path):
+                        os.unlink(file_path)
+        
+        # Очищаем файлы с пакетами
+        package_files = [
+            os.path.join('package_create', 'result.txt'),
+            os.path.join('package_create', 'used.txt'),
+            'package_list.txt',
+            'test.apk'
+        ]
+        for file_path in package_files:
+            if os.path.exists(file_path):
+                os.unlink(file_path)
+        
+        flash('Все пакеты и файлы успешно удалены!', 'success')
+        return jsonify({'status': 'success', 'message': 'Все пакеты удалены'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)})
+
+@app.route('/download_packages_by_apk/<apk_name>')
+def download_packages_by_apk(apk_name):
+    try:
+        # Получаем историю операций с этим APK
+        history_data = load_history()
+        apk_operations = [h for h in history_data if h.get('type') == 'apk_processing' and h.get('apk_name') == apk_name]
+        
+        if not apk_operations:
+            flash(f'Не найдено операций для APK: {apk_name}', 'error')
+            return redirect(url_for('history'))
+        
+        # Создаем архив с APK файлами, созданными из этого исходного APK
+        zip_filename = f'packages_from_{apk_name}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.zip'
+        zip_path = zip_filename
+        
+        files_added = 0
+        with zipfile.ZipFile(zip_path, 'w') as zipf:
+            if os.path.exists('new_package'):
+                for file in os.listdir('new_package'):
+                    if file.endswith('.apk'):
+                        file_path = os.path.join('new_package', file)
+                        zipf.write(file_path, file)
+                        files_added += 1
+        
+        if files_added == 0:
+            flash('Нет файлов для архивации', 'error')
+            return redirect(url_for('history'))
+        
+        return send_file(zip_path, as_attachment=True, download_name=zip_filename)
+    except Exception as e:
+        flash(f'Ошибка создания архива: {str(e)}', 'error')
+        return redirect(url_for('history'))
 
 @app.route('/update_from_github', methods=['POST'])
 def update_from_github():
