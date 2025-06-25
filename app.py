@@ -135,26 +135,27 @@ def generate_packages():
         print(f"Локальный путь к скрипту: {local_script_path}")
         print(f"Локальный файл существует: {os.path.exists(local_script_path)}")
         
-        # Используем тот путь, который существует
+        # Проверяем оба возможных расположения файла
         if os.path.exists(script_path):
-            final_script_path = script_path
             work_dir = project_dir
+            script_name = 'create_packeges.py'
         elif os.path.exists(local_script_path):
-            final_script_path = local_script_path
             work_dir = os.getcwd()
+            script_name = 'create_packeges.py'
         else:
             flash(f'Файл скрипта не найден ни по пути {script_path}, ни по пути {local_script_path}', 'error')
             return redirect(url_for('index'))
 
-        print(f"Используем скрипт: {final_script_path}")
         print(f"Рабочая директория для выполнения: {work_dir}")
+        print(f"Переходим в package_create и запускаем: {script_name}")
 
-        # Используем полный абсолютный путь к скрипту
-        result = subprocess.run(['python3', final_script_path], 
+        # Переходим в папку package_create и запускаем скрипт
+        package_create_dir = os.path.join(work_dir, 'package_create')
+        result = subprocess.run(['python3', script_name], 
                               input=str(count), 
                               text=True, 
                               capture_output=True,
-                              cwd=work_dir)
+                              cwd=package_create_dir)
 
         if result.returncode == 0:
             # Сохраняем в историю
