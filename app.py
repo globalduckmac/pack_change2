@@ -62,8 +62,18 @@ def index():
 
     # Получаем список готовых APK файлов в new_package
     new_apk_files = []
+    new_apk_file_sizes = {}
     if os.path.exists('new_package'):
         new_apk_files = [f for f in os.listdir('new_package') if f.endswith('.apk')]
+        # Получаем размеры новых файлов
+        for apk_file in new_apk_files:
+            try:
+                file_path = os.path.join('new_package', apk_file)
+                size_bytes = os.path.getsize(file_path)
+                size_mb = round(size_bytes / (1024 * 1024), 2)
+                new_apk_file_sizes[apk_file] = size_mb
+            except:
+                new_apk_file_sizes[apk_file] = 0
 
     # Проверяем наличие сгенерированных пакетов
     result_exists = os.path.exists('package_create/result.txt')
@@ -84,7 +94,8 @@ def index():
                          result_exists=result_exists,
                          used_exists=used_exists,
                          generated_packages=generated_packages,
-                         apk_file_sizes=apk_file_sizes)
+                         apk_file_sizes=apk_file_sizes,
+                         new_apk_file_sizes=new_apk_file_sizes)
 
 @app.route('/generate_packages', methods=['POST'])
 def generate_packages():
