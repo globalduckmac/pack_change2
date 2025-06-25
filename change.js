@@ -114,7 +114,6 @@ async function main(args) {
     const decodedApkPath = `${apkPath}.decoded`
     let workingDir = path.dirname(apkPath);
 
-
     const javaPath = process.env.JAVA_PATH
     const zipalignPath = process.env.ZIPALIGN_PATH
     const apksignerPath = process.env.APKSIGNER_PATH
@@ -122,7 +121,6 @@ async function main(args) {
     const keyAlias = process.env.KEY_ALIAS
     const keystorePassword = process.env.KEYSTORE_PASSWORD
     const keyPassword = process.env.KEY_PASSWORD
-
 
     const packages = await filterLinesByRegex(packageListPath, packgeNameRegexp)
     console.log('packages', packages)
@@ -139,13 +137,20 @@ async function main(args) {
     console.log('code: ', code)
 
 
+    // Ensure new_package directory exists
+    const newPackageDir = path.join(workingDir, 'new_package');
+    if (!fs.existsSync(newPackageDir)) {
+        fs.mkdirSync(newPackageDir, { recursive: true });
+    }
+
+
     for (let index = 0; index < packages.length; index++) {
         const newPackageName = packages[index];
 
         console.log('newPackageName', newPackageName)
         const newApkPath = path.join(workingDir, `${newPackageName}.apk`)
         const newAlignedApkPath = path.join(workingDir, `aligned_${newPackageName}.apk`)
-        const newSignedApkPath = path.join(workingDir, `signed_${newPackageName}.apk`)
+        const newSignedApkPath = path.join(newPackageDir, `${newPackageName}.apk`) // Save to new_package
 
 
         let origPackageName = await getPackageAttribute(path.join(decodedApkPath, 'AndroidManifest.xml'))
@@ -161,14 +166,20 @@ async function main(args) {
         console.log('code: ', code)
 
         code = await runCommand(`${apksignerPath} sign --ks ${keystorePath} --ks-key-alias ${keyAlias} --ks-pass pass:${keystorePassword} --key-pass pass:${keyPassword} --out ${newSignedApkPath} ${newAlignedApkPath}`, workingDir)
-        console.log('code: ', code)
-        if(code == 0){
-            fs.unlinkSync(`${newAlignedApkPath}`)        
+        console.log('sign code: ', code)
+
+        // Удаляем временные файлы
+        try {
+            if (fs.existsSync(newApkPath)) fs.unlinkSync(newApkPath)
+            if (fs.existsSync(newAlignedApkPath)) fs.unlinkSync(newAlignedApkPath)
+            console.log(`Файл ${newPackageName}.apk сохранен в папку new_package`)
+        } catch (err) {
+            console.log('Ошибка при очистке временных файлов:', err.message)
         }
     }
 
     fs.rmSync(decodedApkPath, { recursive: true })
-    
+
     console.log('Done!')
 }
 
