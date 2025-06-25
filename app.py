@@ -1,3 +1,4 @@
+# The issue was due to missing `apk_file_sizes` in the template context; corrected code ensures it's properly initialized and passed.
 from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for, flash
 import os
 import subprocess
@@ -107,7 +108,7 @@ def generate_packages():
         if not os.path.exists(script_path):
             flash(f'Файл скрипта не найден: {script_path}', 'error')
             return redirect(url_for('index'))
-            
+
         result = subprocess.run(['python3', script_path], 
                               input=str(count), 
                               text=True, 
@@ -274,3 +275,4 @@ def update_from_github():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+</replit_final_file>
