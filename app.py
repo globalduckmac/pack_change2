@@ -56,15 +56,18 @@ def run_shell_command():
 
 @app.route('/')
 def index():
+    project_dir = '/root/apk-package-changer'
+    
     # Получаем список APK файлов в old_package
     apk_files = []
     apk_file_sizes = {}
-    if os.path.exists('old_package'):
-        apk_files = [f for f in os.listdir('old_package') if f.endswith('.apk')]
+    old_package_dir = os.path.join(project_dir, 'old_package')
+    if os.path.exists(old_package_dir):
+        apk_files = [f for f in os.listdir(old_package_dir) if f.endswith('.apk')]
         # Получаем размеры файлов
         for apk_file in apk_files:
             try:
-                file_path = os.path.join('old_package', apk_file)
+                file_path = os.path.join(old_package_dir, apk_file)
                 size_bytes = os.path.getsize(file_path)
                 size_mb = round(size_bytes / (1024 * 1024), 2)
                 apk_file_sizes[apk_file] = size_mb
@@ -74,12 +77,13 @@ def index():
     # Получаем список готовых APK файлов в new_package
     new_apk_files = []
     new_apk_file_sizes = {}
-    if os.path.exists('new_package'):
-        new_apk_files = [f for f in os.listdir('new_package') if f.endswith('.apk')]
+    new_package_dir = os.path.join(project_dir, 'new_package')
+    if os.path.exists(new_package_dir):
+        new_apk_files = [f for f in os.listdir(new_package_dir) if f.endswith('.apk')]
         # Получаем размеры новых файлов
         for apk_file in new_apk_files:
             try:
-                file_path = os.path.join('new_package', apk_file)
+                file_path = os.path.join(new_package_dir, apk_file)
                 size_bytes = os.path.getsize(file_path)
                 size_mb = round(size_bytes / (1024 * 1024), 2)
                 new_apk_file_sizes[apk_file] = size_mb
@@ -87,14 +91,14 @@ def index():
                 new_apk_file_sizes[apk_file] = 0
 
     # Проверяем наличие сгенерированных пакетов
-    result_exists = os.path.exists('package_create/result.txt')
-    used_exists = os.path.exists('package_create/used.txt')
+    result_exists = os.path.exists(os.path.join(project_dir, 'package_create', 'result.txt'))
+    used_exists = os.path.exists(os.path.join(project_dir, 'package_create', 'used.txt'))
 
     # Читаем сгенерированные пакеты для отображения
     generated_packages = []
     if result_exists:
         try:
-            with open('package_create/result.txt', 'r') as f:
+            with open(os.path.join(project_dir, 'package_create', 'result.txt'), 'r') as f:
                 generated_packages = [line.strip() for line in f.readlines() if line.strip()]
         except:
             pass
@@ -120,11 +124,13 @@ def generate_packages():
         
         print(f"Ищем файл: {script_path}")
         print(f"Файл существует: {os.path.exists(script_path)}")
+        print(f"Рабочая директория: {os.getcwd()}")
         
         if not os.path.exists(script_path):
             flash(f'Файл скрипта не найден: {script_path}', 'error')
             return redirect(url_for('index'))
 
+        # Используем полный абсолютный путь к скрипту
         result = subprocess.run(['python3', script_path], 
                               input=str(count), 
                               text=True, 
@@ -182,15 +188,17 @@ def change_packages():
     if not selected_apk:
         return jsonify({'status': 'error', 'message': 'Выберите APK файл'})
 
-    if not os.path.exists('package_create/result.txt'):
+    project_dir = '/root/apk-package-changer'
+    if not os.path.exists(f'{project_dir}/package_create/result.txt'):
         return jsonify({'status': 'error', 'message': 'Сначала сгенерируйте пакеты'})
 
     # Создаем символические ссылки для скрипта
     try:
+        project_dir = '/root/apk-package-changer'
         # Копируем выбранный APK как test.apk
-        subprocess.run(['cp', f'old_package/{selected_apk}', 'test.apk'])
+        subprocess.run(['cp', f'{project_dir}/old_package/{selected_apk}', f'{project_dir}/test.apk'])
         # Копируем result.txt как package_list.txt
-        subprocess.run(['cp', 'package_create/result.txt', 'package_list.txt'])
+        subprocess.run(['cp', f'{project_dir}/package_create/result.txt', f'{project_dir}/package_list.txt'])
 
         # Запускаем процесс в отдельном потоке
         thread = threading.Thread(target=run_shell_command)
