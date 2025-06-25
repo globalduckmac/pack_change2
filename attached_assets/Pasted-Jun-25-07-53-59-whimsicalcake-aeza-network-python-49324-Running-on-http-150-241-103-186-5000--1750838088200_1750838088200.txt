@@ -1,0 +1,54 @@
+Jun 25 07:53:59 whimsicalcake.aeza.network python[49324]:  * Running on http://150.241.103.186:5000
+Jun 25 07:53:59 whimsicalcake.aeza.network python[49324]: Press CTRL+C to quit
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]: [2025-06-25 07:54:15,427] ERROR in app: Exception on / [GET]
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]: Traceback (most recent call last):
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]:   File "/root/apk-package-changer/venv/lib/python3.10/site-packages/flask/app.py", line 2190, in wsgi_app
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]:     response = self.full_dispatch_request()
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]:   File "/root/apk-package-changer/venv/lib/python3.10/site-packages/flask/app.py", line 1486, in full_dispatch_request
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]:     rv = self.handle_user_exception(e)
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]:   File "/root/apk-package-changer/venv/lib/python3.10/site-packages/flask/app.py", line 1484, in full_dispatch_request
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]:     rv = self.dispatch_request()
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]:   File "/root/apk-package-changer/venv/lib/python3.10/site-packages/flask/app.py", line 1469, in dispatch_request
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]:     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]:   File "/root/apk-package-changer/app.py", line 54, in index
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]:     return render_template('index.html',
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]:   File "/root/apk-package-changer/venv/lib/python3.10/site-packages/flask/templating.py", line 151, in render_template
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]:     return _render(app, template, context)
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]:   File "/root/apk-package-changer/venv/lib/python3.10/site-packages/flask/templating.py", line 132, in _render
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]:     rv = template.render(context)
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]:   File "/root/apk-package-changer/venv/lib/python3.10/site-packages/jinja2/environment.py", line 1295, in render
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]:     self.environment.handle_exception()
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]:   File "/root/apk-package-changer/venv/lib/python3.10/site-packages/jinja2/environment.py", line 942, in handle_exception
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]:     raise rewrite_traceback_stack(source=source)
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]:   File "/root/apk-package-changer/templates/index.html", line 87, in top-level template code
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]:     <span class="badge bg-primary rounded-pill">{{ apk_file_sizes.get(apk, 0) }} MB</span>
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]:   File "/root/apk-package-changer/venv/lib/python3.10/site-packages/jinja2/environment.py", line 490, in getattr
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]:     return getattr(obj, attribute)
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]: jinja2.exceptions.UndefinedError: 'apk_file_sizes' is undefined
+Jun 25 07:54:15 whimsicalcake.aeza.network python[49324]: 46.243.3.235 - - [25/Jun/2025 07:54:15] "GET / HTTP/1.1" 500 -
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]: [2025-06-25 07:54:18,792] ERROR in app: Exception on / [GET]
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]: Traceback (most recent call last):
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]:   File "/root/apk-package-changer/venv/lib/python3.10/site-packages/flask/app.py", line 2190, in wsgi_app
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]:     response = self.full_dispatch_request()
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]:   File "/root/apk-package-changer/venv/lib/python3.10/site-packages/flask/app.py", line 1486, in full_dispatch_request
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]:     rv = self.handle_user_exception(e)
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]:   File "/root/apk-package-changer/venv/lib/python3.10/site-packages/flask/app.py", line 1484, in full_dispatch_request
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]:     rv = self.dispatch_request()
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]:   File "/root/apk-package-changer/venv/lib/python3.10/site-packages/flask/app.py", line 1469, in dispatch_request
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]:     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]:   File "/root/apk-package-changer/app.py", line 54, in index
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]:     return render_template('index.html',
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]:   File "/root/apk-package-changer/venv/lib/python3.10/site-packages/flask/templating.py", line 151, in render_template
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]:     return _render(app, template, context)
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]:   File "/root/apk-package-changer/venv/lib/python3.10/site-packages/flask/templating.py", line 132, in _render
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]:     rv = template.render(context)
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]:   File "/root/apk-package-changer/venv/lib/python3.10/site-packages/jinja2/environment.py", line 1295, in render
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]:     self.environment.handle_exception()
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]:   File "/root/apk-package-changer/venv/lib/python3.10/site-packages/jinja2/environment.py", line 942, in handle_exception
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]:     raise rewrite_traceback_stack(source=source)
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]:   File "/root/apk-package-changer/templates/index.html", line 87, in top-level template code
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]:     <span class="badge bg-primary rounded-pill">{{ apk_file_sizes.get(apk, 0) }} MB</span>
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]:   File "/root/apk-package-changer/venv/lib/python3.10/site-packages/jinja2/environment.py", line 490, in getattr
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]:     return getattr(obj, attribute)
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]: jinja2.exceptions.UndefinedError: 'apk_file_sizes' is undefined
+Jun 25 07:54:18 whimsicalcake.aeza.network python[49324]: 46.243.3.235 - - [25/Jun/2025 07:54:18] "GET / HTTP/1.1" 500 -
