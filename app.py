@@ -122,8 +122,7 @@ def generate_packages():
         result = subprocess.run(['python3', script_path], 
                               input=str(count), 
                               text=True, 
-                              capture_output=True,
-                              cwd=os.getcwd())
+                              capture_output=True)
 
         if result.returncode == 0:
             # Сохраняем в историю
