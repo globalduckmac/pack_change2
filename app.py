@@ -224,17 +224,27 @@ def change_packages():
     if not selected_apk:
         return jsonify({'status': 'error', 'message': 'Выберите APK файл'})
 
-    project_dir = '/root/apk-package-changer'
-    if not os.path.exists(f'{project_dir}/package_create/result.txt'):
+    # Используем относительные пути
+    result_file = os.path.join('package_create', 'result.txt')
+    if not os.path.exists(result_file):
         return jsonify({'status': 'error', 'message': 'Сначала сгенерируйте пакеты'})
 
     # Создаем символические ссылки для скрипта
     try:
-        project_dir = '/root/apk-package-changer'
         # Копируем выбранный APK как test.apk
-        subprocess.run(['cp', f'{project_dir}/old_package/{selected_apk}', f'{project_dir}/test.apk'])
+        source_apk = os.path.join('old_package', selected_apk)
+        target_apk = 'test.apk'
+        subprocess.run(['cp', source_apk, target_apk])
+        
         # Копируем result.txt как package_list.txt
-        subprocess.run(['cp', f'{project_dir}/package_create/result.txt', f'{project_dir}/package_list.txt'])
+        target_packages = 'package_list.txt'
+        subprocess.run(['cp', result_file, target_packages])
+
+        print(f"=== ОТЛАДКА СМЕНЫ ПАКЕТОВ ===")
+        print(f"Выбранный APK: {selected_apk}")
+        print(f"Исходный файл: {source_apk}, существует: {os.path.exists(source_apk)}")
+        print(f"Целевой APK: {target_apk}, создан: {os.path.exists(target_apk)}")
+        print(f"Список пакетов: {target_packages}, создан: {os.path.exists(target_packages)}")
 
         # Запускаем процесс в отдельном потоке
         thread = threading.Thread(target=run_shell_command)
@@ -242,6 +252,7 @@ def change_packages():
 
         return jsonify({'status': 'started'})
     except Exception as e:
+        print(f"Ошибка в change_packages: {e}")
         return jsonify({'status': 'error', 'message': str(e)})
 
 @app.route('/process_status')
