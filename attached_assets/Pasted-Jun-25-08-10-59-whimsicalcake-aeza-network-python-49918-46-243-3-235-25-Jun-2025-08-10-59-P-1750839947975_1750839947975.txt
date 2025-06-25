@@ -1,0 +1,18 @@
+Jun 25 08:10:59 whimsicalcake.aeza.network python[49918]: 46.243.3.235 - - [25/Jun/2025 08:10:59] "POST /upload_apk HTTP/1.1" 500 -
+Jun 25 08:24:21 whimsicalcake.aeza.network python[49918]: 46.243.3.235 - - [25/Jun/2025 08:24:21] "GET / HTTP/1.1" 200 -
+Jun 25 08:25:21 whimsicalcake.aeza.network python[49918]: [2025-06-25 08:25:21,353] ERROR in app: Exception on /upload_apk [POST]
+Jun 25 08:25:21 whimsicalcake.aeza.network python[49918]: Traceback (most recent call last):
+Jun 25 08:25:21 whimsicalcake.aeza.network python[49918]:   File "/root/apk-package-changer/venv/lib/python3.10/site-packages/flask/app.py", line 2190, in wsgi_app
+Jun 25 08:25:21 whimsicalcake.aeza.network python[49918]:     response = self.full_dispatch_request()
+Jun 25 08:25:21 whimsicalcake.aeza.network python[49918]:   File "/root/apk-package-changer/venv/lib/python3.10/site-packages/flask/app.py", line 1486, in full_dispatch_request
+Jun 25 08:25:21 whimsicalcake.aeza.network python[49918]:     rv = self.handle_user_exception(e)
+Jun 25 08:25:21 whimsicalcake.aeza.network python[49918]:   File "/root/apk-package-changer/venv/lib/python3.10/site-packages/flask/app.py", line 1484, in full_dispatch_request
+Jun 25 08:25:21 whimsicalcake.aeza.network python[49918]:     rv = self.dispatch_request()
+Jun 25 08:25:21 whimsicalcake.aeza.network python[49918]:   File "/root/apk-package-changer/venv/lib/python3.10/site-packages/flask/app.py", line 1469, in dispatch_request
+Jun 25 08:25:21 whimsicalcake.aeza.network python[49918]:     return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+Jun 25 08:25:21 whimsicalcake.aeza.network python[49918]:   File "/root/apk-package-changer/app.py", line 92, in upload_apk
+Jun 25 08:25:21 whimsicalcake.aeza.network python[49918]:     file.save(os.path.join('old_package', filename))
+Jun 25 08:25:21 whimsicalcake.aeza.network python[49918]:   File "/root/apk-package-changer/venv/lib/python3.10/site-packages/werkzeug/datastructures/file_storage.py", line 125, in save
+Jun 25 08:25:21 whimsicalcake.aeza.network python[49918]:     dst = open(dst, "wb")
+Jun 25 08:25:21 whimsicalcake.aeza.network python[49918]: FileNotFoundError: [Errno 2] No such file or directory: 'old_package/encon.gau.ting.apk'
+Jun 25 08:25:21 whimsicalcake.aeza.network python[49918]: 46.243.3.235 - - [25/Jun/2025 08:25:21] "POST /upload_apk HTTP/1.1" 500 -
